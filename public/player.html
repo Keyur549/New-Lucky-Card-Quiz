@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Player — જ્ઞાન શોધ Quiz</title>
+<style>
+:root{--bg:#f6f3ee;--card:#fff;--ink:#1f2430;--muted:#6b7280;--accent:#7c3aed;--accent2:#f59e0b;--sky:#38bdf8;--green:#16a34a;--red:#dc2626;--yellow:#eab308;--line:#e5e7eb;}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#141220;--card:#1f1d2e;--ink:#f1f0f6;--muted:#a1a1b5;--line:#33314a;}}
+*{box-sizing:border-box;} body{margin:0;background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,sans-serif;}
+.wrap{max-width:640px;margin:0 auto;padding:20px 16px 40px;}
+h1{font-size:1.3rem;} h2{font-size:1.05rem;color:var(--accent);}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0;}
+.btn{display:inline-block;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer;margin:4px 6px 4px 0;}
+.btn.secondary{background:var(--accent2);} .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+input,select{width:100%;padding:9px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);margin:4px 0 10px;}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin:10px 0;}
+.cell{position:relative;aspect-ratio:1;display:flex;align-items:center;justify-content:center;text-align:center;font-size:.8rem;font-weight:600;padding:3px;border-radius:8px;border:1px solid var(--line);background:var(--bg);cursor:pointer;overflow:hidden;}
+.cell .badge{position:absolute;top:2px;right:3px;font-size:.55rem;font-weight:700;background:rgba(0,0,0,.35);color:#fff;border-radius:6px;padding:0 3px;}
+.cell.marked{background:var(--sky);color:#fff;} .cell.green{background:var(--green);color:#fff;} .cell.red{background:var(--red);color:#fff;} .cell.yellow{background:var(--yellow);color:#332600;}
+.timer{font-size:2rem;font-weight:800;color:var(--red);}
+.qtext{font-size:1.05rem;font-weight:600;background:var(--bg);padding:10px;border-radius:10px;}
+.muted{color:var(--muted);font-size:.85rem;}
+.overflow{overflow-x:auto;} ul{padding-left:18px;}
+.stbl{width:100%;font-size:.78rem;border-collapse:collapse;border:1px solid var(--line);}
+.stbl th,.stbl td{border:1px solid var(--line);padding:7px 8px;text-align:left;}
+.stbl th{background:var(--accent);color:#fff;font-weight:700;position:sticky;top:0;}
+.stbl tr:nth-child(even) td{background:rgba(124,58,237,.06);}
+.stbl td.ok{color:var(--green);font-weight:700;} .stbl td.bad{color:var(--red);font-weight:700;}
+@keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+.big-winner{position:relative;overflow:hidden;text-align:center;background:linear-gradient(160deg,var(--accent),var(--accent2));color:#fff;padding:34px 12px;border-radius:18px;
+  box-shadow:0 0 0 3px rgba(255,215,0,.55), 0 0 40px 8px rgba(255,215,0,.35); animation:pop .6s ease-out, glowPulse 1.8s ease-in-out infinite;}
+.big-winner::before{content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;
+  background:linear-gradient(120deg,transparent,rgba(255,255,255,.4),transparent);transform:skewX(-20deg);animation:sweep 2.6s ease-in-out infinite;pointer-events:none;}
+.big-winner .crown{font-size:3.2rem;animation:crownPulse 1.3s ease-in-out infinite;display:inline-block;}
+.big-winner .win-cat{font-size:2.3rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;margin-top:4px;
+  background:linear-gradient(90deg,#fff6c8,#ffd700,#fff6c8);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 0 22px rgba(255,215,0,.55); animation:shimmer 2s linear infinite;}
+.big-winner .win-avatar{font-size:4.2rem;margin-top:10px;animation:pop .8s ease-out;}
+.big-winner .win-name{font-size:2.1rem;font-weight:800;margin-top:4px;} .big-winner .win-zone{font-size:1.1rem;opacity:.92;}
+.spark{position:absolute;font-size:1.3rem;animation:twinkle 1.6s ease-in-out infinite;pointer-events:none;}
+@keyframes shimmer{to{background-position:-200% center;}}
+@keyframes crownPulse{0%,100%{transform:scale(1) rotate(-5deg);}50%{transform:scale(1.18) rotate(5deg);}}
+@keyframes sweep{0%{left:-60%;}100%{left:130%;}}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 0 3px rgba(255,215,0,.55),0 0 40px 8px rgba(255,215,0,.32);}50%{box-shadow:0 0 0 3px rgba(255,215,0,.85),0 0 60px 14px rgba(255,215,0,.55);}}
+@keyframes twinkle{0%,100%{opacity:.2;transform:scale(.7) rotate(0deg);}50%{opacity:1;transform:scale(1.25) rotate(20deg);}}
+.winmini{position:relative;overflow:hidden;border-radius:14px;padding:14px 6px;text-align:center;
+  animation:pop .5s ease-out, glowPulse 1.8s ease-in-out infinite;
+  box-shadow:0 0 0 2px rgba(255,215,0,.6), 0 0 16px 3px rgba(255,215,0,.35);}
+.winmini::before{content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;
+  background:linear-gradient(120deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);animation:sweep 2.6s ease-in-out infinite;pointer-events:none;}
+.winmini .mcrown{font-size:1.3rem;animation:crownPulse 1.3s ease-in-out infinite;display:inline-block;}
+.winmini .mlbl{font-size:.72rem;font-weight:900;letter-spacing:.5px;text-transform:uppercase;
+  background:linear-gradient(90deg,#fff6c8,#ffd700,#fff6c8);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:shimmer 2.4s linear infinite;}
+.winmini .mav{font-size:2rem;margin:4px 0 2px;animation:pop .8s ease-out;} .winmini .mnm{font-size:1.1rem;font-weight:800;color:#fff;} .winmini .mzn{font-size:.7rem;color:rgba(255,255,255,.85);}
+.winmini .mspark{position:absolute;font-size:.9rem;animation:twinkle 1.6s ease-in-out infinite;pointer-events:none;}
+.numpop{text-align:center;background:linear-gradient(160deg,#7c3aed,#f59e0b);color:#fff;border-radius:22px;padding:30px 20px;
+  box-shadow:0 0 0 3px rgba(255,215,0,.6), 0 0 50px 10px rgba(255,215,0,.4); animation:popBig .45s cubic-bezier(.17,.89,.32,1.49);}
+.numpop .lbl{font-size:1.1rem;font-weight:700;letter-spacing:1px;opacity:.9;text-transform:uppercase;}
+.numpop .num{font-size:5rem;font-weight:900;line-height:1.1;text-shadow:0 0 24px rgba(255,255,255,.6);}
+@keyframes popBig{0%{transform:scale(.3);opacity:0;}70%{transform:scale(1.12);opacity:1;}100%{transform:scale(1);}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">Loading…</div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+const EMOJI_LIST=['🦁','🐯','🐼','🐵','🦊','🐸','🐧','🦉','🐢','🐝','🌸','⭐','🔥','🚀','👑','🎯'];
+const IS_HOST=false;
+const WINNER_ORDER=['line1','line2','line3','line4','line5','full','bonus','zone'];
+const WINNER_LABELS={line1:'1 Line',line2:'2 Line',line3:'3 Line',line4:'4 Line',line5:'5 Line',full:'Full House',bonus:'⭐ Bonus Winner',zone:'🏅 Zone Winner'};
+const prefillCode=(new URLSearchParams(location.search).get('code')||'').toUpperCase();
+let state={
+  screen:'join',
+  profile: JSON.parse(localStorage.getItem('quizProfile')||'{"name":"","avatar":"🦁","zone":""}'),
+  joinErr:'',
+  code:null, name:null, room:null, joinErr:''
+};
+let audioOn=true, uploadedPhoto=null;
+function getClientId(){
+  let id = localStorage.getItem('quizClientId');
+  if(!id){ id = 'c'+Date.now()+Math.random().toString(36).slice(2); localStorage.setItem('quizClientId', id); }
+  return id;
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+let currentUtterance=null;
+function toggleAudio(){ audioOn=!audioOn; if(!audioOn && 'speechSynthesis' in window) window.speechSynthesis.cancel(); render(); }
+function speakQuestion(text, force){
+  if(!('speechSynthesis' in window)){ if(force) alert('આ browser Speech સપોર્ટ નથી કરતું.'); return; }
+  if(!audioOn && !force) return;
+  const synth=window.speechSynthesis;
+  const doSpeak=()=>{
+    const voices=synth.getVoices();
+    const gv=voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith('gu'));
+    if(force && voices.length===0){ alert('આ device પર કોઈ TTS voice મળી નથી.'); return; }
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang='gu-IN'; u.rate=0.95; if(gv) u.voice=gv;
+    if(force) u.onerror=(e)=>alert('Speech Error: '+(e.error||'unknown'));
+    currentUtterance=u;
+    synth.speak(u);
+  };
+  try{
+    if(synth.speaking||synth.pending) synth.cancel();
+    setTimeout(()=>{ if(synth.getVoices().length) doSpeak(); else synth.onvoiceschanged=doSpeak; }, 150);
+  }catch(e){ if(force) alert('Audio error: '+e.message); }
+}
+setInterval(()=>{ if('speechSynthesis' in window && window.speechSynthesis.paused) window.speechSynthesis.resume(); },4000);
+let lastSpokenIdx=null;
+function maybeSpeak(r){ if(r.status==='question' && r.curIdx!=null && r.curIdx!==lastSpokenIdx){ lastSpokenIdx=r.curIdx; speakQuestion(r.questions[r.curIdx].q); } else if(r.status==='active'||r.status==='lobby') lastSpokenIdx=null; }
+
+function uiJoinRoom(){
+  const name=document.getElementById('joinName').value.trim();
+  const zone=document.getElementById('joinZone').value.trim();
+  const avatar=document.getElementById('joinAvatar').value;
+  const keepForm=()=>{ render(); document.getElementById('joinName').value=name; document.getElementById('joinZone').value=zone; document.getElementById('joinAvatar').value=avatar; document.getElementById('joinCode').value=code; };
+  const code=document.getElementById('joinCode').value.trim().toUpperCase();
+  if(!name){ state.joinErr='તમારું નામ નાખો.'; keepForm(); return; }
+  if(!zone){ state.joinErr='Zone નું નામ નાખો.'; keepForm(); return; }
+  state.profile={name,avatar,zone};
+  socket.emit('player:join',{code,name,zone,avatar,clientId:getClientId()},(res)=>{
+    if(!res.ok){ state.joinErr=res.error; keepForm(); return; }
+    state.code=code; state.name=res.yourKey; state.joinErr='';
+    state.room=res.room; socket.emit('subscribe',{code}); render();
+    if(!res.resumed && res.yourKey!==name.trim()) alert('બીજા Zone માં આ નામ પહેલેથી છે — તમે "'+res.yourKey+'" તરીકે Join થયા. Winner list માં આ જ નામ શોધજો.');
+  });
+}
+socket.on('state', r=>{ if(state.code && r.code===state.code){ state.room=r; maybeSpeak(r); render(); } });
+socket.on('connect', ()=>{ if(state.code) socket.emit('subscribe',{code:state.code}); });
+// if the server slept/restarted and the host restored the game, re-join the room automatically
+setInterval(()=>{ if(state.code) socket.emit('resync',{code:state.code},(res)=>{ if(res&&res.ok&&res.room){ state.room=res.room; render(); } }); },4000);
+
+function playerMark(ci){ socket.emit('player:mark',{code:state.code,name:state.name,ci}); }
+function playerClaim(type){ socket.emit('player:claim',{code:state.code,name:state.name,type}); }
+function markedLines(pname){
+  const p=state.room.players[pname];
+  const LINES=(()=>{const L=[];for(let x=0;x<5;x++)L.push([0,1,2,3,4].map(c=>x*5+c));for(let x=0;x<5;x++)L.push([0,1,2,3,4].map(y=>y*5+x));L.push([0,6,12,18,24]);L.push([4,8,12,16,20]);return L;})();
+  return LINES.filter(line=>line.every(ci=>p.marks[ci]!==undefined)).length;
+}
+function playerResults(pname){
+  const r=state.room,p=r.players[pname]; const cellState=Array(25).fill('none');
+  Object.entries(p.marks).forEach(([ci,qi])=>{ci=+ci; cellState[ci]=(r.questions[qi]&&r.questions[qi].a===p.card[ci])?'green':'red';});
+  const usedAnswers=r.usedIdx.map(i=>r.questions[i].a);
+  for(let ci=0;ci<25;ci++) if(cellState[ci]==='none'&&usedAnswers.includes(p.card[ci])) cellState[ci]='yellow';
+  const LINES=(()=>{const L=[];for(let x=0;x<5;x++)L.push([0,1,2,3,4].map(c=>x*5+c));for(let x=0;x<5;x++)L.push([0,1,2,3,4].map(y=>y*5+x));L.push([0,6,12,18,24]);L.push([4,8,12,16,20]);return L;})();
+  const correctRows=LINES.filter(line=>line.every(ci=>cellState[ci]==='green')).length;
+  const correctCount=cellState.filter(s=>s==='green').length;
+  const wrongCount=cellState.filter(s=>s==='red').length;
+  const netScore=correctCount-wrongCount;
+  const fullHouse=cellState.every(s=>s==='green');
+  return {cellState,correctRows,correctCount,wrongCount,netScore,fullHouse};
+}
+function zoneStats(r, resFn){
+  const z={};
+  Object.keys(r.players).forEach(n=>{ const zn=(r.players[n].zone||'—').trim()||'—'; const key=zn.toLowerCase(); const res=resFn(n);
+    if(!z[key]) z[key]={zone:zn,count:0,total:0}; z[key].count++; z[key].total+=res.netScore; });
+  const arr=Object.values(z).map(o=>({...o,avg:o.total/o.count})).sort((a,b)=>b.avg-a.avg||b.total-a.total);
+  return arr;
+}
+function zoneTableHTML(r, resFn){
+  const arr=zoneStats(r,resFn); if(!arr.length) return '';
+  return `<div class="card overflow"><h2>🏅 Zone-wise Score</h2><div class="muted">Best Zone = સૌથી વધારે સરેરાશ Net Score</div><table class="stbl">
+  <tr><th>#</th><th align="left">Zone</th><th>Players</th><th>કુલ Net</th><th>સરેરાશ</th></tr>
+  ${arr.map((o,i)=>`<tr style="${i===0?'background:#fff3b0;font-weight:800':''}"><td align="center">${i===0?'🏆':i+1}</td><td>${esc(o.zone)}</td><td align="center">${o.count}</td><td align="center">${o.total}</td><td align="center">${o.avg.toFixed(1)}</td></tr>`).join('')}
+  </table></div>`;
+}
+function fmtDur(ms){ if(ms==null) return ''; const t=Math.round(ms/1000), m=Math.floor(t/60), sc=t%60; return (m?m+' મિનિટ ':'')+sc+' સેકન્ડ'; }
+function fmtTime(ts){ if(!ts) return ''; return new Date(ts).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+function winnerBannerHTML(r){
+  const w=r.winners||{}; const step=r.revealStep||0;
+  if(step>=1 && step<=WINNER_ORDER.length){
+    const key=WINNER_ORDER[step-1]; const name=w[key]; const isZone=key==='zone'; const pd=(name&&!isZone)?r.players[name]:null;
+    const ts=w[key+'_ts']; const ms=w[key+'_ms']; const tie=w[key+'_tie'];
+    return `<div class="card big-winner">
+    <span class="spark" style="top:10px;left:14px;animation-delay:0s">✨</span>
+    <span class="spark" style="top:20px;right:18px;animation-delay:.3s">✨</span>
+    <span class="spark" style="bottom:16px;left:24px;animation-delay:.6s">⭐</span>
+    <span class="spark" style="bottom:20px;right:26px;animation-delay:.9s">⭐</span>
+    <div class="crown">👑</div><div class="win-cat">${esc(WINNER_LABELS[key])}</div>
+    <div class="win-avatar">${isZone?(name?'🏅':'❓'):(pd?pd.avatar:'❓')}</div><div class="win-name">${name?esc(name):'કોઈ Winner નથી'}</div>
+    ${pd&&pd.zone?`<div class="win-zone">${esc(pd.zone)}</div>`:''}
+    ${key==='bonus'&&w.bonus_score!=null?`<div class="win-zone" style="font-size:1.6em;font-weight:900">🎯 Net Score: ${w.bonus_score}</div>`:''}
+    ${isZone&&name?`<div class="win-zone" style="font-size:1.6em;font-weight:900">📊 સરેરાશ Net Score: ${w.zone_avg}</div><div class="win-zone">કુલ ${w.zone_total} · ${w.zone_count} Players</div>`:''}
+    ${ts?`<div class="win-zone" style="font-size:1.3em;font-weight:800">⏱ ${fmtDur(ms)} માં</div><div class="win-zone">🕒 Claim Time: ${fmtTime(ts)}</div>`:''}
+    ${tie?`<div class="win-zone" style="color:#fff3b0;font-weight:800">⚠️ Tie! Same time: ${tie.map(esc).join(', ')}</div>`:''}</div>`;
+  }
+  if(step>WINNER_ORDER.length){
+    const colors=['#7c3aed','#f59e0b','#16a34a','#0ea5e9','#e11d48','#9333ea','#eab308','#0d9488'];
+    return `<div class="card"><div class="fireworks">🎆🎉🎇👑🎊</div><h2 style="text-align:center">🏆 બધા Winners</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    ${WINNER_ORDER.map((k,i)=>{const name=w[k]; const pd=(name&&k!=='zone')?r.players[name]:null; const ts=w[k+'_ts']; const ms=w[k+'_ms'];
+      return `<div class="winmini" style="background:${colors[i%colors.length]}">
+      <span class="mspark" style="top:4px;left:6px;animation-delay:${(i*.15)}s">✨</span>
+      <span class="mspark" style="bottom:4px;right:6px;animation-delay:${(i*.15+.4)}s">⭐</span>
+      <div class="mcrown">👑</div><div class="mlbl">${esc(WINNER_LABELS[k])}</div><div class="mav">${k==='zone'?(name?'🏅':'❓'):(pd?pd.avatar:'❓')}</div>
+      <div class="mnm">${name?esc(name):'—'}</div><div class="mzn">${pd&&pd.zone?esc(pd.zone):''}</div>
+      ${k==='bonus'&&w.bonus_score!=null?`<div class="mzn" style="font-size:1.1em;font-weight:900">🎯 Net: ${w.bonus_score}</div>`:''}
+      ${k==='zone'&&name?`<div class="mzn" style="font-size:1.1em;font-weight:900">📊 સરેરાશ: ${w.zone_avg} · 👥 ${w.zone_count} Players</div>`:''}
+      ${ts?`<div class="mzn">⏱ ${fmtDur(ms)}</div><div class="mzn">🕒 ${fmtTime(ts)}</div>`:''}</div>`;
+    }).join('')}</div></div>`;
+  }
+  return '';
+}
+
+function render(){
+  const el=document.getElementById('app');
+  if(!state.code){
+    const pr=state.profile;
+    el.innerHTML=`<h1>🎴 Player Join</h1>
+    <div class="card">
+      <input id="joinName" placeholder="તમારું નામ" autocomplete="off">
+      <div class="muted">Avatar પસંદ કરો</div>
+      <select id="joinAvatar">${EMOJI_LIST.map(e=>`<option value="${e}">${e}</option>`).join('')}</select>
+      <input id="joinZone" placeholder="Zone નું નામ" autocomplete="off">
+      <input id="joinCode" placeholder="Room Code" value="${esc(prefillCode)}">
+      <button class="btn secondary" onclick="uiJoinRoom()">Join Game</button>
+      ${state.joinErr?`<div class="muted" style="color:var(--red)">${esc(state.joinErr)}</div>`:''}
+    </div>`;
+    return;
+  }
+  if(!state.room){ el.innerHTML='<div class="card">Loading…</div>'; return; }
+  const r=state.room, p=r.players[state.name];
+  if(!p){ el.innerHTML='<div class="card">Card તૈયાર થઈ રહ્યું છે…</div>'; return; }
+  let body=`<h1>🎴 ${esc(state.name)}</h1><div class="muted">Room: ${esc(r.code)} — તમારું Player ID: <b>${esc(state.name)}</b></div>`;
+  if(r.status==='lobby'||r.status==='active') body+=`<div class="card">Host ની રાહ જુઓ…</div>`;
+  if(r.status==='spinning') body+=`<div class="card"><div class="qtext">🎡 Host Wheel Spin કરી રહ્યા છે...</div></div>`;
+  if(r.status==='revealing') body+=`<div class="card numpop"><div class="lbl">🎯 Question Number</div><div class="num">${r.curIdx+1}</div></div>`;
+  if(r.status==='question'){
+    const remain=r.paused?Math.ceil((r.pausedMs||0)/1000):Math.max(0,Math.ceil((r.timerEnd-Date.now())/1000));
+    body+=`<div class="card"><div class="qtext">${esc(r.questions[r.curIdx].q)}</div>${r.questions[r.curIdx].img?`<img src="${esc(r.questions[r.curIdx].img)}" style="max-width:100%;max-height:260px;border-radius:12px;margin:8px auto;display:block" onerror="this.style.display='none'">`:''}<div class="timer">${remain}s${r.paused?' ⏸':''}</div>${r.paused?'<div class="qtext" style="text-align:center;background:#fff3b0">⏸ Game થોભાવ્યું છે — થોડી રાહ જુઓ</div>':''}
+    <button class="btn secondary" onclick='speakQuestion(${JSON.stringify(r.questions[r.curIdx].q)},true)'>🔊 સાંભળો</button>
+    <button class="btn ghost" onclick="toggleAudio()">${audioOn?'🔊 Auto On':'🔇 Auto Off'}</button>
+    <div class="muted">તમારા card માં જવાબ શોધીને click કરો.</div></div>`;
+  }
+  if(r.status==='locked') body+=`<div class="card muted">⏱ સમય પૂરો — next question ની રાહ જુઓ.</div>`;
+  if(r.status==='ended') body+=`<div class="card muted">Game પૂરી — results ની રાહ જુઓ.</div>`;
+
+  let cellState=Array(25).fill(null);
+  if(r.status==='revealed'){ cellState=playerResults(state.name).cellState; }
+  body+=`<div class="card"><div class="grid">`;
+  for(let i=0;i<25;i++){
+    let cls='cell';
+    if(r.status==='revealed') cls+=' '+cellState[i];
+    else if(p.marks[i]!==undefined) cls+=' marked';
+    const badge=p.marks[i]!==undefined?`<span class="badge">Q${p.marks[i]+1}</span>`:'';
+    body+=`<div class="${cls}" onclick="playerMark(${i})">${badge}${esc(p.card[i])}</div>`;
+  }
+  body+=`</div></div>`;
+
+  if(r.status!=='revealed'){
+    const lines=markedLines(state.name);
+    const opts=[['line1','1 Line',1],['line2','2 Line',2],['line3','3 Line',3],['line4','4 Line',4],['line5','5 Line',5],['full','Full House',5]];
+    body+=`<div class="card"><h2>Claim</h2><div class="row">`;
+    for(const [key,label,need] of opts){
+      const c=p.claims&&p.claims[key];
+      const enabled=key==='full'?lines>=5:lines>=need;
+      // a claim stays locked (validity is secret) unless the player has marked more cells since
+      const more=c && Object.keys(p.marks).length>c.marks;
+      const locked=c && !more;
+      body+=`<button class="btn ${c?'ghost':'secondary'}" ${(!enabled||locked)?'disabled':''} onclick="playerClaim('${key}')">${c?'✔ ':''}${label}${c?`<br><small>🕒 ${fmtTime(c.ts)} · ${fmtDur(c.ts-(r.startedAt||r.createdAt))}</small>`:''}</button>`;
+    }
+    body+=`</div></div>`;
+  } else {
+    const labels={line1:'1 Line',line2:'2 Line',line3:'3 Line',line4:'4 Line',line5:'5 Line',full:'Full House'};
+    const res=playerResults(state.name); const step=r.revealStep||0;
+    body+=winnerBannerHTML(r) || `<div class="card muted">Host winners reveal કરવાના શરૂ કરે એની રાહ જુઓ…</div>`;
+    body+=`<div class="card"><h2>તમારા Claims</h2><ul>${Object.keys(p.claims||{}).map(k=>{
+      const c=p.claims[k]; const valid=c.valid===true;
+      return `<li>${labels[k]}: ${valid?'✅ Valid':'❌ Invalid'} — 🕒 ${fmtTime(c.ts)} (${fmtDur(c.ts-(r.startedAt||r.createdAt))} માં)</li>`;
+    }).join('')||'<span class="muted">કોઈ claim કર્યો નથી</span>'}</ul>
+    ${step>WINNER_ORDER.length && r.winners && r.winners.full===state.name?'<div style="font-size:1.1rem">🏆 તમે Grand Champion છો! 🎉</div>':''}
+    ${step>WINNER_ORDER.length && r.winners && r.winners.bonus===state.name?'<div style="font-size:1.05rem">⭐ તમે Bonus Winner છો!</div>':''}
+    </div>`;
+    const revMap={}; Object.entries(p.marks).forEach(([ci,qi])=>{revMap[qi]=+ci;});
+    body+=`<div class="card overflow"><h2>તમારો Summary (${res.correctCount} Correct / ${res.wrongCount} Wrong)</h2>
+    <div style="text-align:center;margin:8px 0 12px;padding:14px;border-radius:16px;background:${res.netScore<0?'#fee2e2':'#dcfce7'}">
+      <div style="font-size:.95rem;font-weight:700;color:#444">🎯 Net Score</div>
+      <div style="font-size:4.2rem;line-height:1.1;font-weight:900;color:${res.netScore<0?'#dc2626':'#16a34a'}">${res.netScore}</div>
+      <div class="muted">${res.correctCount} સાચા − ${res.wrongCount} ખોટા (ખોટા Click દીઠ −1)</div></div>
+    <table class="stbl">
+    <tr><th>#</th><th>Question</th><th>તમારો જવાબ</th><th>સાચો જવાબ</th><th>Result</th></tr>
+    ${r.usedIdx.map(qi=>{
+      const ci=revMap[qi]; const given=ci!==undefined?p.card[ci]:'—';
+      const ok=ci!==undefined && r.questions[qi].a===given;
+      const cls=ci===undefined?'':(ok?'ok':'bad');
+      return `<tr><td>${qi+1}</td><td>${esc(r.questions[qi].q)}</td><td>${esc(given)}</td><td>${ok?'—':esc(r.questions[qi].a)}</td><td align="center" class="${cls}">${ci===undefined?'—':(ok?'✅':'❌')}</td></tr>`;
+    }).join('')}
+    </table></div>`;
+  }
+  el.innerHTML=body;
+}
+setInterval(()=>{ if(state.room && state.room.status==='question') render(); },1000);
+render();
+if('serviceWorker' in navigator){ navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister())); caches && caches.keys && caches.keys().then(ks=>ks.forEach(k=>caches.delete(k))); }
+</script>
+</body>
+</html>
